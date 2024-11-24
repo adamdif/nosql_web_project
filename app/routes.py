@@ -13,44 +13,47 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def form():
     return render_template('form.html')
 
-@main.route('/submit', methods=['POST'])
-def submit():
-    username = request.form.get('username')
-    email = request.form.get('email')
-    file = request.files.get('file')  # Récupère le fichier téléchargé
+@main.route('/submit', methods=['GET', 'POST'])
+def submit_user():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        file = request.files.get('file')  # Récupérer le fichier du formulaire
 
-    # Enregistre les données dans PostgreSQL
-    try:
-        conn = init_postgres()
-        cur = conn.cursor()
-        cur.execute("INSERT INTO users (username, email) VALUES (%s, %s) RETURNING id", (username, email))
-        user_id = cur.fetchone()[0]  # Récupère l'ID utilisateur
-        conn.commit()
-        cur.close()
-        conn.close()
-    except Exception as e:
-        return f"Erreur PostgreSQL : {e}"
-
-    # Gère le fichier et l'enregistre dans MongoDB
-    if file:
-        filename = secure_filename(file.filename)  # Nettoie le nom du fichier
-        file_path = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(file_path)  # Enregistre le fichier localement
-
-        # Enregistre les métadonnées dans MongoDB
+        # Sauvegarder l'utilisateur dans PostgreSQL
         try:
-            db = init_mongo()
-            db.documents.insert_one({
-                "user_id": user_id,
-                "username": username,
-                "email": email,
-                "file_name": filename,
-                "file_path": file_path
-            })
+            conn = init_postgres()
+            cur = conn.cursor()
+            cur.execute("INSERT INTO users (username, email) VALUES (%s, %s) RETURNING id;", (username, email))
+            user_id = cur.fetchone()[0]  # Récupère l'ID de l'utilisateur créé
+            conn.commit()
+            cur.close()
+            conn.close()
         except Exception as e:
-            return f"Erreur MongoDB : {e}"
+            return f"Erreur PostgreSQL : {e}"
 
-    return f"Données reçues et enregistrées pour {username}. Document associé : {filename if file else 'Aucun fichier'}"
+        # Sauvegarder le fichier dans `uploads` si présent
+        if file:
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(file_path)
+
+            # Enregistrer les métadonnées dans MongoDB
+            try:
+                db = init_mongo()
+                db.documents.insert_one({
+                    "user_id": user_id,
+                    "username": username,
+                    "email": email,
+                    "file_name": filename,
+                    "file_path": file_path
+                })
+            except Exception as e:
+                return f"Erreur MongoDB : {e}"
+
+        return "Utilisateur et fichier ajoutés avec succès."
+
+    return render_template('submit.html')
 
 @main.route('/users', methods=['GET'])
 def list_users():
