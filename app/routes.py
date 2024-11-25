@@ -1,12 +1,12 @@
 import os
-from flask import Blueprint, render_template, request, send_from_directory
+from flask import Blueprint, render_template, request, send_from_directory, abort
 from werkzeug.utils import secure_filename
 from app.db_utils import init_mongo, init_postgres
 
 main = Blueprint('main', __name__)
 
 # Définir un dossier pour enregistrer les fichiers localement (optionnel)
-UPLOAD_FOLDER = './uploads'
+UPLOAD_FOLDER = os.path.abspath('/app/uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @main.route('/', methods=['GET'])
@@ -90,3 +90,12 @@ def list_users():
 
     # Rendre la page avec les données des utilisateurs
     return render_template('users.html', users=users)
+
+@main.route('/uploads/<filename>', methods=['GET'])
+def download_file(filename):
+    print(f"Flask cherche : ./uploads/{filename}")
+    try:
+        return send_from_directory('/app/uploads', filename, as_attachment=True)
+    except FileNotFoundError:
+        print(f"Erreur : fichier introuvable ./uploads/{filename}")
+        abort(404, description="Fichier introuvable")

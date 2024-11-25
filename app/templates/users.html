@@ -13,23 +13,25 @@
                 <th>ID</th>
                 <th>Nom d'utilisateur</th>
                 <th>Email</th>
-                <th>Document associé</th>
+                <th>Document</th>
             </tr>
         </thead>
         <tbody>
             {% for user in users %}
-            <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>
-                    {% if user.document %}
-                        <strong>Nom :</strong> {{ user.document.file_name }}<br>
-                    {% else %}
-                        Aucun document
-                    {% endif %}
-                </td>
-            </tr>
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% if user.document %}
+                            <a href="/uploads/{{ user.document.file_name }}" download="{{ user.document.file_name }}">
+                                Télécharger
+                            </a>
+                        {% else %}
+                            Aucun fichier
+                        {% endif %}
+                    </td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>
