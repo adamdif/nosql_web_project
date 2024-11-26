@@ -9,6 +9,7 @@ main = Blueprint('main', __name__)
 UPLOAD_FOLDER = os.path.abspath('/app/uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
 @main.route('/', methods=['GET'])
 def form():
     return render_template('form.html')
@@ -55,15 +56,63 @@ def submit_user():
 
     return render_template('submit.html')
 
+# @main.route('/users', methods=['GET'])
+# def list_users():
+#     users = []
+
+#     # Récupérer les utilisateurs de PostgreSQL
+#     try:
+#         conn = init_postgres()
+#         cur = conn.cursor()
+#         cur.execute("SELECT id, username, email FROM users;")
+#         postgres_users = cur.fetchall()  # [(id, username, email), ...]
+#         cur.close()
+#         conn.close()
+#     except Exception as e:
+#         return f"Erreur lors de la récupération des utilisateurs PostgreSQL : {e}"
+
+#     # Récupérer les documents associés dans MongoDB
+#     try:
+#         db = init_mongo()
+#         mongo_docs = list(db.documents.find())  # [{...}, {...}, ...]
+#     except Exception as e:
+#         return f"Erreur lors de la récupération des documents MongoDB : {e}"
+
+#     # Associer les utilisateurs PostgreSQL à leurs documents MongoDB
+#     for user in postgres_users:
+#         user_id, username, email = user
+#         document = next((doc for doc in mongo_docs if doc["user_id"] == user_id), None)
+#         users.append({
+#             "id": user_id,
+#             "username": username,
+#             "email": email,
+#             "document": document
+#         })
+
+#     # Rendre la page avec les données des utilisateurs
+#     return render_template('users.html', users=users)
+
 @main.route('/users', methods=['GET'])
 def list_users():
+    search_query = request.args.get('search', '').strip()  # Récupère la recherche depuis l'URL
     users = []
 
     # Récupérer les utilisateurs de PostgreSQL
     try:
         conn = init_postgres()
         cur = conn.cursor()
-        cur.execute("SELECT id, username, email FROM users;")
+        if search_query:
+            # Recherche par nom d'utilisateur ou email
+            cur.execute(
+                """
+                SELECT id, username, email 
+                FROM users 
+                WHERE username ILIKE %s OR email ILIKE %s;
+                """, 
+                (f'%{search_query}%', f'%{search_query}%')
+            )
+        else:
+            cur.execute("SELECT id, username, email FROM users;")
         postgres_users = cur.fetchall()  # [(id, username, email), ...]
         cur.close()
         conn.close()
@@ -89,7 +138,7 @@ def list_users():
         })
 
     # Rendre la page avec les données des utilisateurs
-    return render_template('users.html', users=users)
+    return render_template('users.html', users=users, search_query=search_query)
 
 @main.route('/uploads/<filename>', methods=['GET'])
 def download_file(filename):

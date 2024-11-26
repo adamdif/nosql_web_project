@@ -7,6 +7,19 @@
 </head>
 <body>
     <h1>Liste des utilisateurs</h1>
+
+    <!-- Formulaire de recherche -->
+    <form method="GET" action="/users">
+        <input 
+            type="text" 
+            name="search" 
+            placeholder="Rechercher un utilisateur..." 
+            value="{{ search_query }}"
+        />
+        <button type="submit">Rechercher</button>
+    </form>
+
+    <!-- Table des utilisateurs -->
     <table border="1">
         <thead>
             <tr>
@@ -24,6 +37,7 @@
                     <td>{{ user.email }}</td>
                     <td>
                         {% if user.document %}
+                            <div><strong>Nom :</strong> {{ user.document.file_name }}</div>
                             <a href="/uploads/{{ user.document.file_name }}" download="{{ user.document.file_name }}">
                                 Télécharger
                             </a>
