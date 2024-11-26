@@ -9,13 +9,18 @@ main = Blueprint('main', __name__)
 UPLOAD_FOLDER = os.path.abspath('/app/uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-
 @main.route('/', methods=['GET'])
-def form():
-    return render_template('form.html')
+def home():
+    return render_template('index.html', title="Accueil")
+
+# @main.route('/', methods=['GET'])
+# def form():
+#     return render_template('form.html')
 
 @main.route('/submit', methods=['GET', 'POST'])
 def submit_user():
+    success_message = None  # Message de succès initialement vide
+
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
@@ -36,7 +41,7 @@ def submit_user():
         # Sauvegarder le fichier dans `uploads` si présent
         if file:
             filename = secure_filename(file.filename)
-            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            file_path = os.path.join('./uploads', filename)
             file.save(file_path)
 
             # Enregistrer les métadonnées dans MongoDB
@@ -52,9 +57,10 @@ def submit_user():
             except Exception as e:
                 return f"Erreur MongoDB : {e}"
 
-        return "Utilisateur et fichier ajoutés avec succès."
+        # Définir un message de succès
+        success_message = f"L'utilisateur '{username}' et le fichier '{filename}' ont bien été ajoutés."
 
-    return render_template('submit.html')
+    return render_template('submit.html', success_message=success_message)
 
 # @main.route('/users', methods=['GET'])
 # def list_users():
