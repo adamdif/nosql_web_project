@@ -1,4 +1,4 @@
-import psycopg2
+import psycopg2 # type: ignore
 from pymongo import MongoClient
 
 # Fonction pour connecter à PostgreSQL

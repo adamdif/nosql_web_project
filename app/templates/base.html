@@ -4,43 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
-    <style>
-        .navbar {
-            background-color: #333;
-            overflow: hidden;
-            display: flex;
-            justify-content: space-around;
-            padding: 1em 0;
-        }
-
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5em 1em;
-        }
-
-        .navbar a:hover {
-            background-color: #575757;
-            border-radius: 5px;
-        }
-
-        .container {
-            padding: 2em;
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <div class="navbar">
-        <a href="/">Accueil</a>
-        <a href="/users">Liste des utilisateurs</a>
-        <a href="/submit">Ajouter un utilisateur</a>
-    </div>
+    <header class="navbar">
+        <nav>
+            <ul>
+                <li><a href="/">Accueil</a></li>
+                <li><a href="/users">Liste des utilisateurs</a></li>
+                <li><a href="/submit">Ajouter un utilisateur</a></li>
+            </ul>
+        </nav>
+    </header>
 
-    <div class="container">
+    <main class="container">
         {% block content %}
-        <!-- Contenu spécifique à chaque page -->
         {% endblock %}
-    </div>
+    </main>
 </body>
 </html>

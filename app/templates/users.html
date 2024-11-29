@@ -1,57 +1,45 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liste des utilisateurs</title>
-</head>
-<body>
-    <h1>Liste des utilisateurs</h1>
+<h1>Liste des utilisateurs</h1>
 
-    <!-- Formulaire de recherche -->
-    <form method="GET" action="/users">
-        <input 
-            type="text" 
-            name="search" 
-            placeholder="Rechercher un utilisateur..." 
-            value="{{ search_query }}"
-        />
-        <button type="submit">Rechercher</button>
-    </form>
+<form method="GET" action="/users">
+    <input 
+        type="text" 
+        name="search" 
+        placeholder="Rechercher un utilisateur..." 
+        value="{{ search_query }}"
+    />
+    <button type="submit">Rechercher</button>
+</form>
 
-    <!-- Table des utilisateurs -->
-    <table border="1">
-        <thead>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Document</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
             <tr>
-                <th>ID</th>
-                <th>Nom d'utilisateur</th>
-                <th>Email</th>
-                <th>Document</th>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>
+                    {% if user.document %}
+                        <div><strong>Nom :</strong> {{ user.document.file_name }}</div>
+                        <a href="/uploads/{{ user.document.file_name }}" class="btn" download>
+                            Télécharger
+                        </a>
+                    {% else %}
+                        Aucun fichier
+                    {% endif %}
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
-                <tr>
-                    <td>{{ user.id }}</td>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>
-                        {% if user.document %}
-                            <div><strong>Nom :</strong> {{ user.document.file_name }}</div>
-                            <a href="/uploads/{{ user.document.file_name }}" download="{{ user.document.file_name }}">
-                                Télécharger
-                            </a>
-                        {% else %}
-                            Aucun fichier
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
-</html>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}
