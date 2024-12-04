@@ -9,6 +9,29 @@ main = Blueprint('main', __name__)
 UPLOAD_FOLDER = os.path.abspath('/app/uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+from app.db_utils import init_postgres
+
+def ensure_users_table():
+    """Vérifie et crée la table 'users' dans PostgreSQL si elle n'existe pas."""
+    try:
+        conn = init_postgres()
+        cur = conn.cursor()
+        # Vérifie et crée la table si elle n'existe pas
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(100) NOT NULL,
+            email VARCHAR(100) NOT NULL
+        );
+        """)
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("Table 'users' vérifiée/créée avec succès.")
+    except Exception as e:
+        print(f"Erreur lors de la vérification/création de la table 'users' : {e}")
+        
+
 @main.route('/', methods=['GET'])
 def home():
     return render_template('index.html', title="Accueil")
@@ -16,7 +39,6 @@ def home():
 # @main.route('/', methods=['GET'])
 # def form():
 #     return render_template('form.html')
-
 @main.route('/submit', methods=['GET', 'POST'])
 def submit_user():
     success_message = None  # Message de succès initialement vide
@@ -25,6 +47,9 @@ def submit_user():
         username = request.form.get('username')
         email = request.form.get('email')
         file = request.files.get('file')  # Récupérer le fichier du formulaire
+
+        # Vérifie et crée la table 'users' si nécessaire
+        ensure_users_table()
 
         # Sauvegarder l'utilisateur dans PostgreSQL
         try:
